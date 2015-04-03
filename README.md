@@ -1,0 +1,2 @@
+# tec
+text editing component
