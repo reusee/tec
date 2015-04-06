@@ -24,6 +24,7 @@ type State interface {
 
 type Tec struct {
 	Changesets []Changeset
+	csIndex    int
 	States     [][][]State
 	jobs       chan func()
 	jobWg      *sync.WaitGroup
@@ -58,10 +59,11 @@ func New(states [][][]State) *Tec {
 	}
 
 	return &Tec{
-		States: states,
-		jobs:   jobs,
-		jobWg:  wg,
-		closed: closed,
+		csIndex: -1,
+		States:  states,
+		jobs:    jobs,
+		jobWg:   wg,
+		closed:  closed,
 	}
 }
 
@@ -70,18 +72,40 @@ func (t *Tec) Close() {
 }
 
 func (t *Tec) Apply(c Changeset) {
+	t.Changesets = t.Changesets[:t.csIndex+1]
 	t.Changesets = append(t.Changesets, c)
-	n := len(t.Changesets) - 1
+	t.csIndex = len(t.Changesets) - 1
 	for _, sss := range t.States {
 		t.jobWg.Add(len(sss))
 		for _, ss := range sss {
 			ss := ss
 			t.jobs <- func() {
 				for _, s := range ss {
-					s.Apply(n, c)
+					s.Apply(t.csIndex, c)
 				}
 			}
 		}
 		t.jobWg.Wait()
 	}
+}
+
+func (t *Tec) Revert() {
+	if t.csIndex < 0 {
+		return
+	}
+	c := t.Changesets[t.csIndex]
+	for _, sss := range t.States {
+		t.jobWg.Add(len(sss))
+		for _, ss := range sss {
+			ss := ss
+			t.jobs <- func() {
+				for _, s := range ss {
+					s.Revert(t.csIndex, c)
+				}
+			}
+		}
+		t.jobWg.Wait()
+	}
+	t.Changesets = t.Changesets[:len(t.Changesets)-1]
+	t.csIndex--
 }

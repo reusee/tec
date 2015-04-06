@@ -18,9 +18,11 @@ type fooState struct {
 func (f fooState) Apply(n int, c Changeset) {
 	atomic.AddInt64(f.i, f.n)
 }
-func (f fooState) Revert(n int, c Changeset) {}
+func (f fooState) Revert(n int, c Changeset) {
+	atomic.AddInt64(f.i, -f.n)
+}
 
-func TestApply(t *testing.T) {
+func TestApplyAndRevert(t *testing.T) {
 	var n int64
 	c := New([][][]State{
 		[][]State{
@@ -34,6 +36,26 @@ func TestApply(t *testing.T) {
 	defer c.Close()
 	c.Apply(nil)
 	if n != 15 {
+		t.Fail()
+	}
+	c.Revert()
+	if n != 0 {
+		t.Fail()
+	}
+	c.Revert()
+	if n != 0 {
+		t.Fail()
+	}
+	c.Apply(nil)
+	if n != 15 {
+		t.Fail()
+	}
+	c.Revert()
+	if n != 0 {
+		t.Fail()
+	}
+	c.Revert()
+	if n != 0 {
 		t.Fail()
 	}
 }
