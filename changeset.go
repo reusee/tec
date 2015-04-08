@@ -35,7 +35,9 @@ func (m *ModChangeset) Load(loader dms.Loader) {
 }
 
 func (m *ModChangeset) Apply(c Changeset) {
-	m.Changesets = m.Changesets[:m.csIndex+1] // clear reverted changesets
+	if m.csIndex > 0 {
+		m.Changesets = m.Changesets[:m.csIndex+1] // clear reverted changesets
+	}
 	m.Changesets = append(m.Changesets, c)
 	m.csIndex = len(m.Changesets) - 1
 	m.applyCast.Pcall(m.csIndex, c)
