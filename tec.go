@@ -2,9 +2,14 @@ package tec
 
 import (
 	"sync"
+	"time"
 
 	"github.com/reusee/dms"
 )
+
+func init() {
+	dms.MaxResolveTime = time.Second * 1
+}
 
 type Tec struct {
 	*dms.Sys
