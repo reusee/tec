@@ -15,11 +15,14 @@ type Tec struct {
 	*dms.Sys
 }
 
+var mods = []dms.Mod{}
+
+func addMod(mod dms.Mod) {
+	mods = append(mods, mod)
+}
+
 func New() *Tec {
 	sys := dms.New()
-	mods := []dms.Mod{
-		new(ModChangeset),
-	}
 	wg := new(sync.WaitGroup)
 	wg.Add(len(mods))
 	for _, mod := range mods {

@@ -2,6 +2,10 @@ package tec
 
 import "github.com/reusee/dms"
 
+func init() {
+	addMod(new(ModChangeset))
+}
+
 type ModChangeset struct {
 	Changesets []Changeset
 	csIndex    int
