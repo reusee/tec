@@ -25,6 +25,8 @@ const (
 )
 
 func (m *ModChangeset) Load(loader dms.Loader) {
+	loader.Provide("mod changeset", m)
+
 	m.applyCast = dms.NewCast((*func(int, Changeset))(nil))
 	loader.Provide("changeset apply cast", m.applyCast)
 	m.revertCast = dms.NewCast((*func(int, Changeset))(nil))
